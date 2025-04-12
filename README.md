@@ -7,24 +7,95 @@ Este proyecto es una API REST que gestiona información sobre proyectos de innov
 - Java 21
 - PostgreSQL 12 o superior
 - Maven 3.6 o superior
+- Docker y Docker Compose (para despliegue con contenedores)
 
 ## Configuración del Entorno
 
-1. **Base de Datos**
-   ```sql
-   CREATE DATABASE proyectos_proinnovate_peru;
+### 1. Configuración de PostgreSQL
+
+1. **Instalar PostgreSQL**
+   ```bash
+   # Para macOS usando Homebrew
+   brew install postgresql@15
+   
+   # Para Ubuntu/Debian
+   sudo apt-get update
+   sudo apt-get install postgresql-15
    ```
 
-2. **Configuración de la Base de Datos**
-   - Abrir `src/main/resources/application.properties`
-   - Modificar las siguientes propiedades según tu configuración:
+2. **Iniciar el servicio de PostgreSQL**
+   ```bash
+   # Para macOS
+   brew services start postgresql@15
+   
+   # Para Ubuntu/Debian
+   sudo systemctl start postgresql
+   ```
+
+3. **Crear la Base de Datos**
+   ```bash
+   # Acceder a PostgreSQL
+   psql -U postgres
+   
+   # Crear la base de datos
+   CREATE DATABASE proyectos_proinnovate_peru;
+   
+   # Verificar la creación
+   \l
+   
+   # Salir de psql
+   \q
+   ```
+
+### 2. Configuración del Archivo .env
+
+1. **Crear el archivo .env en la raíz del proyecto**
+   ```bash
+   touch .env
+   ```
+
+2. **Agregar las siguientes variables al archivo .env**
    ```properties
-   spring.datasource.url=jdbc:postgresql://localhost:5432/proyectos_proinnovate_peru
-   spring.datasource.username=postgres
-   spring.datasource.password=postgres
+   # Configuración de la Base de Datos
+   POSTGRES_DB=proyectos_proinnovate_peru
+   POSTGRES_USER=postgres
+   POSTGRES_PASSWORD=postgres
+   DB_HOST=db
+   DB_PORT=5432
+
+   # Configuración de la Aplicación
+   SERVER_PORT=8080
+   SPRING_PROFILES_ACTIVE=prod
+
+   # Configuración de JVM
+   JAVA_OPTS=-Xmx512m -Xms256m
+
+   # Variables de Seguridad
+   JWT_SECRET=tu_clave_secreta_muy_segura_aqui
+   JWT_EXPIRATION=86400000
+   ```
+
+   > **IMPORTANTE**: 
+   > - Cambia los valores por defecto, especialmente las credenciales y claves secretas en producción
+   > - No subas el archivo .env al repositorio
+   > - Para desarrollo local, cambia `DB_HOST=db` a `DB_HOST=localhost`
+
+### 3. Verificación de la Configuración
+
+1. **Verificar la conexión a PostgreSQL**
+   ```bash
+   psql -U postgres -d proyectos_proinnovate_peru -c "\dt"
+   ```
+
+2. **Verificar las variables de entorno**
+   ```bash
+   # Verifica que el archivo .env existe
+   cat .env
    ```
 
 ## Instalación y Ejecución
+
+### Ejecución Local
 
 1. **Clonar el Repositorio**
    ```bash
@@ -42,7 +113,51 @@ Este proyecto es una API REST que gestiona información sobre proyectos de innov
    ./mvnw spring-boot:run
    ```
 
+### Ejecución con Docker
+
+1. **Construir y Ejecutar con Docker Compose**
+   ```bash
+   # Detener contenedores previos si existen
+   docker-compose down -v
+   
+   # Construir las imágenes
+   docker-compose build --no-cache
+   
+   # Iniciar los servicios
+   docker-compose up
+   ```
+
+2. **Verificar el Estado de los Contenedores**
+   ```bash
+   docker-compose ps
+   ```
+
+3. **Ver Logs de la Aplicación**
+   ```bash
+   docker-compose logs -f app
+   ```
+
 La aplicación estará disponible en `http://localhost:8080`
+
+## Solución de Problemas Comunes
+
+1. **Error de conexión a la base de datos**
+   - Verificar que PostgreSQL está corriendo
+   - Confirmar las credenciales en el archivo .env
+   - Para desarrollo local, asegurarse que DB_HOST=localhost
+   - Para Docker, asegurarse que DB_HOST=db
+
+2. **Error de puertos en uso**
+   - Verificar que los puertos 8080 y 5432 estén libres
+   - Cambiar SERVER_PORT o DB_PORT en el .env si es necesario
+
+3. **Error de permisos en PostgreSQL**
+   ```bash
+   # Acceder a PostgreSQL y otorgar permisos
+   psql -U postgres
+   ALTER USER postgres WITH PASSWORD 'postgres';
+   GRANT ALL PRIVILEGES ON DATABASE proyectos_proinnovate_peru TO postgres;
+   ```
 
 ## Endpoints Disponibles
 
