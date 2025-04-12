@@ -28,7 +28,7 @@ Este proyecto es una API REST que gestiona información sobre proyectos de innov
 
 1. **Clonar el Repositorio**
    ```bash
-   git clone [URL_DEL_REPOSITORIO]
+   git clone [https://github.com/Alumno-Codigo-Tecsup/ms-innovate-peru.git]
    cd proinnovatePeru
    ```
 
