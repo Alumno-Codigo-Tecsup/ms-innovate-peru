@@ -79,6 +79,50 @@ La aplicación estará disponible en `http://localhost:8080`
 - **Método**: GET
 - **Ejemplo**: `GET http://localhost:8080/api/projects/search/titulo/innovacion`
 
+## Ejemplos de cURLs
+
+### Obtener Todos los Proyectos (Paginado)
+```bash
+curl -X GET 'http://localhost:8080/api/projects?page=0&size=10' \
+-H 'Accept: application/json'
+```
+
+### Obtener Proyecto por ID
+```bash
+curl -X GET 'http://localhost:8080/api/projects/1' \
+-H 'Accept: application/json'
+```
+
+### Buscar Proyectos por Fondo
+```bash
+curl -X GET 'http://localhost:8080/api/projects/search/fondo/PNIPA' \
+-H 'Accept: application/json'
+```
+
+### Buscar Proyectos por Departamento
+```bash
+curl -X GET 'http://localhost:8080/api/projects/search/departamento/LIMA' \
+-H 'Accept: application/json'
+```
+
+### Buscar Proyectos por Año
+```bash
+curl -X GET 'http://localhost:8080/api/projects/search/anio/2022' \
+-H 'Accept: application/json'
+```
+
+### Buscar Proyectos por Título
+```bash
+curl -X GET 'http://localhost:8080/api/projects/search/titulo/innovacion' \
+-H 'Accept: application/json'
+```
+
+### Verificar Estado de la Aplicación
+```bash
+curl -X GET 'http://localhost:8080/health' \
+-H 'Accept: application/json'
+```
+
 ## Estructura de Datos
 
 Los proyectos tienen la siguiente estructura:
