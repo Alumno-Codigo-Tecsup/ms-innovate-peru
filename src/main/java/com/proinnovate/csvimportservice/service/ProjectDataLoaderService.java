@@ -43,7 +43,7 @@ public class ProjectDataLoaderService {
     }
 
     @Transactional
-    private void loadDataFromCSV() throws Exception {
+    protected void loadDataFromCSV() throws Exception {
         ClassPathResource resource = new ClassPathResource("data/projects.csv");
         
         try (Reader reader = new BufferedReader(
