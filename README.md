@@ -1,246 +1,274 @@
-# InnovationProjectsPeru - API de Proyectos de Innovación
+# InnovationProjectsPeru - Innovation Projects API
 
-Este proyecto es una API REST que gestiona información sobre proyectos de innovación financiados por el estado peruano. La aplicación está construida con Spring Boot y utiliza PostgreSQL como base de datos.
+This project is a REST API that manages information about innovation projects funded by the Peruvian government. The application is built with Spring Boot and uses PostgreSQL as its database.
 
-## Requisitos Previos
+## Project Architecture
+
+```mermaid
+graph TD
+    Client[Client Applications] -->|HTTP Requests| API[REST API]
+    API -->|CRUD Operations| DB[(PostgreSQL Database)]
+    
+    subgraph Backend Architecture
+        API -->|1. Get Projects| Projects[Projects Service]
+        API -->|2. Search| Search[Search Service]
+        API -->|3. Authentication| Auth[Auth Service]
+        Projects --> Repository[Project Repository]
+        Search --> Repository
+        Repository -->|JPA| DB
+    end
+
+    subgraph Data Flow
+        CSV[CSV Data] -.->|Initial Load| DB
+        Client -->|1. GET /api/projects| API
+        Client -->|2. GET /api/projects/{id}| API
+        Client -->|3. GET /api/projects/search/*| API
+    end
+
+    style Client fill:#f9f,stroke:#333,stroke-width:2px
+    style API fill:#bbf,stroke:#333,stroke-width:2px
+    style DB fill:#dfd,stroke:#333,stroke-width:2px
+```
+
+## Prerequisites
 
 - Java 21
-- PostgreSQL 12 o superior
-- Maven 3.6 o superior
-- Docker y Docker Compose (para despliegue con contenedores)
+- PostgreSQL 12 or higher
+- Maven 3.6 or higher
+- Docker and Docker Compose (for container deployment)
 
-## Configuración del Entorno
+## Environment Setup
 
-### 1. Configuración de PostgreSQL
+### 1. PostgreSQL Configuration
 
-1. **Instalar PostgreSQL**
+1. **Install PostgreSQL**
    ```bash
-   # Para macOS usando Homebrew
+   # For macOS using Homebrew
    brew install postgresql@15
    
-   # Para Ubuntu/Debian
+   # For Ubuntu/Debian
    sudo apt-get update
    sudo apt-get install postgresql-15
    ```
 
-2. **Iniciar el servicio de PostgreSQL**
+2. **Start PostgreSQL Service**
    ```bash
-   # Para macOS
+   # For macOS
    brew services start postgresql@15
    
-   # Para Ubuntu/Debian
+   # For Ubuntu/Debian
    sudo systemctl start postgresql
    ```
 
-3. **Crear la Base de Datos**
+3. **Create Database**
    ```bash
-   # Acceder a PostgreSQL
+   # Access PostgreSQL
    psql -U postgres
    
-   # Crear la base de datos
+   # Create database
    CREATE DATABASE proyectos_proinnovate_peru;
    
-   # Verificar la creación
+   # Verify creation
    \l
    
-   # Salir de psql
+   # Exit psql
    \q
    ```
 
-### 2. Configuración del Archivo .env
+### 2. .env File Configuration
 
-1. **Crear el archivo .env en la raíz del proyecto**
+1. **Create .env file in project root**
    ```bash
    touch .env
    ```
 
-2. **Agregar las siguientes variables al archivo .env**
+2. **Add the following variables to .env file**
    ```properties
-   # Configuración de la Base de Datos
+   # Database Configuration
    POSTGRES_DB=proyectos_proinnovate_peru
    POSTGRES_USER=postgres
    POSTGRES_PASSWORD=postgres
    DB_HOST=db
    DB_PORT=5432
 
-   # Configuración de la Aplicación
+   # Application Configuration
    SERVER_PORT=8080
    SPRING_PROFILES_ACTIVE=prod
 
-   # Configuración de JVM
+   # JVM Configuration
    JAVA_OPTS=-Xmx512m -Xms256m
 
-   # Variables de Seguridad
-   JWT_SECRET=tu_clave_secreta_muy_segura_aqui
+   # Security Variables
+   JWT_SECRET=your_very_secure_secret_key_here
    JWT_EXPIRATION=86400000
    ```
 
-   > **IMPORTANTE**: 
-   > - Cambia los valores por defecto, especialmente las credenciales y claves secretas en producción
-   > - No subas el archivo .env al repositorio
-   > - Para desarrollo local, cambia `DB_HOST=db` a `DB_HOST=localhost`
+   > **IMPORTANT**: 
+   > - Change default values, especially credentials and secret keys in production
+   > - Don't upload the .env file to the repository
+   > - For local development, change `DB_HOST=db` to `DB_HOST=localhost`
 
-### 3. Verificación de la Configuración
+### 3. Configuration Verification
 
-1. **Verificar la conexión a PostgreSQL**
+1. **Verify PostgreSQL Connection**
    ```bash
    psql -U postgres -d proyectos_proinnovate_peru -c "\dt"
    ```
 
-2. **Verificar las variables de entorno**
+2. **Verify Environment Variables**
    ```bash
-   # Verifica que el archivo .env existe
+   # Verify .env file exists
    cat .env
    ```
 
-## Instalación y Ejecución
+## Installation and Execution
 
-### Ejecución Local
+### Local Execution
 
-1. **Clonar el Repositorio**
+1. **Clone Repository**
    ```bash
    git clone [https://github.com/Alumno-Codigo-Tecsup/ms-innovate-peru.git]
    cd proinnovatePeru
    ```
 
-2. **Compilar el Proyecto**
+2. **Build Project**
    ```bash
    ./mvnw clean install
    ```
 
-3. **Ejecutar la Aplicación**
+3. **Run Application**
    ```bash
    ./mvnw spring-boot:run
    ```
 
-### Ejecución con Docker
+### Docker Execution
 
-1. **Construir y Ejecutar con Docker Compose**
+1. **Build and Run with Docker Compose**
    ```bash
-   # Detener contenedores previos si existen
+   # Stop previous containers if they exist
    docker-compose down -v
    
-   # Construir las imágenes
+   # Build images
    docker-compose build --no-cache
    
-   # Iniciar los servicios
+   # Start services
    docker-compose up
    ```
 
-2. **Verificar el Estado de los Contenedores**
+2. **Check Container Status**
    ```bash
    docker-compose ps
    ```
 
-3. **Ver Logs de la Aplicación**
+3. **View Application Logs**
    ```bash
    docker-compose logs -f app
    ```
 
-La aplicación estará disponible en `http://localhost:8080`
+The application will be available at `http://localhost:8080`
 
-## Solución de Problemas Comunes
+## Common Troubleshooting
 
-1. **Error de conexión a la base de datos**
-   - Verificar que PostgreSQL está corriendo
-   - Confirmar las credenciales en el archivo .env
-   - Para desarrollo local, asegurarse que DB_HOST=localhost
-   - Para Docker, asegurarse que DB_HOST=db
+1. **Database Connection Error**
+   - Verify PostgreSQL is running
+   - Confirm credentials in .env file
+   - For local development, ensure DB_HOST=localhost
+   - For Docker, ensure DB_HOST=db
 
-2. **Error de puertos en uso**
-   - Verificar que los puertos 8080 y 5432 estén libres
-   - Cambiar SERVER_PORT o DB_PORT en el .env si es necesario
+2. **Port in Use Error**
+   - Verify ports 8080 and 5432 are free
+   - Change SERVER_PORT or DB_PORT in .env if needed
 
-3. **Error de permisos en PostgreSQL**
+3. **PostgreSQL Permission Error**
    ```bash
-   # Acceder a PostgreSQL y otorgar permisos
+   # Access PostgreSQL and grant permissions
    psql -U postgres
    ALTER USER postgres WITH PASSWORD 'postgres';
    GRANT ALL PRIVILEGES ON DATABASE proyectos_proinnovate_peru TO postgres;
    ```
 
-## Endpoints Disponibles
+## Available Endpoints
 
-### 1. Obtener Todos los Proyectos (Paginado)
+### 1. Get All Projects (Paginated)
 - **URL**: `/api/projects`
-- **Método**: GET
-- **Parámetros de Query**:
-  - `page`: número de página (0 por defecto)
-  - `size`: tamaño de página (20 por defecto)
-- **Ejemplo**: `GET http://localhost:8080/api/projects?page=0&size=10`
+- **Method**: GET
+- **Query Parameters**:
+  - `page`: page number (0 by default)
+  - `size`: page size (20 by default)
+- **Example**: `GET http://localhost:8080/api/projects?page=0&size=10`
 
-### 2. Obtener Proyecto por ID
+### 2. Get Project by ID
 - **URL**: `/api/projects/{id}`
-- **Método**: GET
-- **Ejemplo**: `GET http://localhost:8080/api/projects/1`
+- **Method**: GET
+- **Example**: `GET http://localhost:8080/api/projects/1`
 
-### 3. Buscar Proyectos por Fondo
+### 3. Search Projects by Fund
 - **URL**: `/api/projects/search/fondo/{fondo}`
-- **Método**: GET
-- **Ejemplo**: `GET http://localhost:8080/api/projects/search/fondo/PNIPA`
+- **Method**: GET
+- **Example**: `GET http://localhost:8080/api/projects/search/fondo/PNIPA`
 
-### 4. Buscar Proyectos por Departamento
+### 4. Search Projects by Department
 - **URL**: `/api/projects/search/departamento/{departamento}`
-- **Método**: GET
-- **Ejemplo**: `GET http://localhost:8080/api/projects/search/departamento/LIMA`
+- **Method**: GET
+- **Example**: `GET http://localhost:8080/api/projects/search/departamento/LIMA`
 
-### 5. Buscar Proyectos por Año
+### 5. Search Projects by Year
 - **URL**: `/api/projects/search/anio/{anio}`
-- **Método**: GET
-- **Ejemplo**: `GET http://localhost:8080/api/projects/search/anio/2022`
+- **Method**: GET
+- **Example**: `GET http://localhost:8080/api/projects/search/anio/2022`
 
-### 6. Buscar Proyectos por Título
+### 6. Search Projects by Title
 - **URL**: `/api/projects/search/titulo/{titulo}`
-- **Método**: GET
-- **Ejemplo**: `GET http://localhost:8080/api/projects/search/titulo/innovacion`
+- **Method**: GET
+- **Example**: `GET http://localhost:8080/api/projects/search/titulo/innovacion`
 
-## Ejemplos de cURLs
+## cURL Examples
 
-### Obtener Todos los Proyectos (Paginado)
+### Get All Projects (Paginated)
 ```bash
 curl -X GET 'http://localhost:8080/api/projects?page=0&size=10' \
 -H 'Accept: application/json'
 ```
 
-### Obtener Proyecto por ID
+### Get Project by ID
 ```bash
 curl -X GET 'http://localhost:8080/api/projects/1' \
 -H 'Accept: application/json'
 ```
 
-### Buscar Proyectos por Fondo
+### Search Projects by Fund
 ```bash
 curl -X GET 'http://localhost:8080/api/projects/search/fondo/PNIPA' \
 -H 'Accept: application/json'
 ```
 
-### Buscar Proyectos por Departamento
+### Search Projects by Department
 ```bash
 curl -X GET 'http://localhost:8080/api/projects/search/departamento/LIMA' \
 -H 'Accept: application/json'
 ```
 
-### Buscar Proyectos por Año
+### Search Projects by Year
 ```bash
 curl -X GET 'http://localhost:8080/api/projects/search/anio/2022' \
 -H 'Accept: application/json'
 ```
 
-### Buscar Proyectos por Título
+### Search Projects by Title
 ```bash
 curl -X GET 'http://localhost:8080/api/projects/search/titulo/innovacion' \
 -H 'Accept: application/json'
 ```
 
-### Verificar Estado de la Aplicación
+### Verify Application Status
 ```bash
 curl -X GET 'http://localhost:8080/health' \
 -H 'Accept: application/json'
 ```
 
-## Estructura de Datos
+## Data Structure
 
-Los proyectos tienen la siguiente estructura:
+Projects have the following structure:
 
 ```json
 {
@@ -265,50 +293,50 @@ Los proyectos tienen la siguiente estructura:
 }
 ```
 
-## Carga Inicial de Datos
+## Initial Data Load
 
-La aplicación cargará automáticamente los datos del archivo CSV ubicado en `src/main/resources/data/projects.csv` cuando se inicie por primera vez. Este proceso solo se ejecutará si la base de datos está vacía.
+The application will automatically load data from the CSV file located in `src/main/resources/data/projects.csv` when it starts for the first time. This process will only run if the database is empty.
 
-## Monitoreo de la Aplicación
+## Application Monitoring
 
-Para verificar el estado de la aplicación, puede utilizar el endpoint de salud:
+To check the status of the application, you can use the health endpoint:
 - **URL**: `/health`
-- **Método**: GET
-- **Ejemplo**: `GET http://localhost:8080/health`
+- **Method**: GET
+- **Example**: `GET http://localhost:8080/health`
 
-## Despliegue con Docker
+## Docker Deployment
 
-### Requisitos
+### Requirements
 - Docker
 - Docker Compose
 
-### Pasos para el Despliegue
+### Steps for Deployment
 
-1. **Construir y Ejecutar con Docker Compose**
+1. **Build and Run with Docker Compose**
    ```bash
    docker-compose up --build
    ```
-   Este comando construirá la imagen de la aplicación y iniciará tanto la aplicación como la base de datos PostgreSQL.
+   This command will build the application image and start both the application and PostgreSQL database.
 
-2. **Detener los Contenedores**
+2. **Stop Containers**
    ```bash
    docker-compose down
    ```
 
-3. **Ver Logs de la Aplicación**
+3. **View Application Logs**
    ```bash
    docker-compose logs -f app
    ```
 
-### Despliegue en la Nube
+### Cloud Deployment
 
-Para desplegar en diferentes proveedores de nube:
+To deploy on different cloud providers:
 
 #### AWS Elastic Beanstalk
-1. Instalar AWS CLI y configurar credenciales
-2. Crear archivo `Dockerrun.aws.json`
-3. Crear nueva aplicación en Elastic Beanstalk
-4. Subir la aplicación:
+1. Install AWS CLI and configure credentials
+2. Create file `Dockerrun.aws.json`
+3. Create new application in Elastic Beanstalk
+4. Upload application:
    ```bash
    eb init
    eb create
@@ -316,31 +344,31 @@ Para desplegar en diferentes proveedores de nube:
    ```
 
 #### Google Cloud Run
-1. Instalar Google Cloud CLI
-2. Configurar proyecto:
+1. Install Google Cloud CLI
+2. Configure project:
    ```bash
    gcloud init
    ```
-3. Construir y subir la imagen:
+3. Build and upload image:
    ```bash
    gcloud builds submit --tag gcr.io/[PROJECT_ID]/proinnovate-api
    ```
-4. Desplegar en Cloud Run:
+4. Deploy to Cloud Run:
    ```bash
    gcloud run deploy proinnovate-api --image gcr.io/[PROJECT_ID]/proinnovate-api
    ```
 
 #### Azure Container Instances
-1. Instalar Azure CLI
-2. Crear registro de contenedores:
+1. Install Azure CLI
+2. Create container registry:
    ```bash
    az acr create --name proinnovateregistry --resource-group [RESOURCE_GROUP] --sku Basic
    ```
-3. Construir y subir imagen:
+3. Build and upload image:
    ```bash
    az acr build --registry proinnovateregistry --image proinnovate-api .
    ```
-4. Desplegar contenedor:
+4. Deploy container:
    ```bash
    az container create --name proinnovate-api --image proinnovateregistry.azurecr.io/proinnovate-api:latest
    ``` 
